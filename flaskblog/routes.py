@@ -1,9 +1,11 @@
 from flask import render_template, url_for, flash, redirect, request
 from flaskblog import app, db, bcrypt
-from flaskblog.forms import RegistrationForm, LoginForm
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from flaskblog.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
-
+import secrets
+import os
+from PIL import Image
 posts = [
 	{
 		'author': 'Rinat Raimov',
@@ -62,8 +64,49 @@ def logout():
 	logout_user()
 	return redirect(url_for('home'))
 
+def save_picture(form_picture):
+	''' 
+	 данная функция сохраняет аватарку пользователя в файловую систему
+	 в random_hex записываем случайное значение, которое будем использовать
+	 в качестве имени файла
+	 с помощью os.path.splitext получаем название загружаемого файла и 
+	 его расширение
+	 в picture_fn пишем название файла, который будем сохранять
+	 в picture_path  пишем путь по которому будем сохранять файл с новым названием
+	 app.root_path- полный пусть до package directory
+	'''
+	random_hex = secrets.token_hex(8) 
+	f_name, f_ext = os.path.splitext(form_picture.filename)
+	picture_fn = random_hex + f_ext
+	picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
 
-@app.route("/account")
+	output_size = (125, 125)
+	i = Image.open(form_picture)
+	i.thumbnail(output_size)
+	i.save(picture_path)
+
+	return picture_fn
+
+@app.route("/account", methods=['GET', 'POST'])
 @login_required
 def account():	
-	return render_template('account.html', title='Account')
+	form = UpdateAccountForm()
+	if form.validate_on_submit():
+		# если загрузили файл для аватарки,то сохраняем его в файловую систему
+		# и затем показываем на странице с информацией о аккаунте, вместо default.jpg
+		if form.picture.data: 
+			picture_file = save_picture(form.picture.data)
+			current_user.image_file = picture_file
+		current_user.username = form.username.data
+		current_user.email = form.email.data
+		db.session.commit()
+		flash('Your account has been updated', 'success')
+		return redirect(url_for('account'))
+		# если это GET-запрос, то  в полях формы 
+		#указываем значения из БД, чтобы не было пустых полей
+	elif request.method == 'GET': 	
+		form.username.data = current_user.username
+		form.email.data = current_user.email
+	image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+	return render_template('account.html', title='Account', 
+							image_file=image_file, form=form)
