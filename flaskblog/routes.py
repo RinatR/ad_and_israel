@@ -1,14 +1,16 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog import app, db, bcrypt
-from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
-from flaskblog.models import User, Post
+from flaskblog.forms import (RegistrationForm, LoginForm, UpdateAccountForm, 
+							PostForm, CampaignForm)
+from flaskblog.models import User, Post, Campaign
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets
 import os
 from PIL import Image
+from datetime import datetime
 
 
-@app.route("/")
+# @app.route("/")
 @app.route("/home")
 def home():
 	page = request.args.get('page', 1, type=int)
@@ -183,3 +185,61 @@ def user_posts(username):
 						.paginate(per_page=5, page=page)
 
 	return render_template('user_posts.html', posts=posts, user=user)
+
+@app.route("/campaign/new", methods=['GET','POST'])
+@login_required
+def new_campaign():
+	form = CampaignForm()
+	if form.validate_on_submit():
+		campaign = Campaign(title=form.title.data, author=current_user, 
+							start_date=form.start_date.data, 
+							finish_date=form.finish_date.data)
+		db.session.add(campaign)
+		db.session.commit()
+		flash('Your campaign has been created', 'success')
+		return redirect(url_for('home'))
+	return render_template('create_campaign.html', title='New Campaign', form=form, 
+							legend='New Campaign')
+@app.route("/")
+@app.route("/campaigns")
+def campaigns():
+	page = request.args.get('page', 1, type=int)
+	campaigns = Campaign.query.order_by(Campaign.finish_date.desc())
+	return render_template('campaigns.html', campaigns=campaigns)
+
+@app.route("/campaign/<int:campaign_id>")
+def campaign(campaign_id):
+	campaign = Campaign.query.get_or_404(campaign_id)
+	return render_template('campaign.html', title=campaign.title, campaign=campaign)
+
+@app.route("/campaign/<int:campaign_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_campaign(campaign_id): 
+	campaign = Campaign.query.get_or_404(campaign_id)
+	if campaign.author != current_user:
+		abort(403)
+	form = CampaignForm()
+	if form.validate_on_submit():
+		campaign.title = form.title.data
+		campaign.start_date = form.start_date.data
+		campaign.finish_date = form.finish_date.data
+		db.session.commit()
+		flash('Your campaign has been updated', 'success')
+		return redirect(url_for('campaigns'))
+	elif request.method == 'GET':
+		form.title.data = campaign.title
+		form.start_date.data = campaign.start_date	
+		form.finish_date.data = campaign.finish_date
+		return render_template('create_campaign.html', title='Update Campaign',
+							form=form, legend='Update Campaign')
+
+@app.route("/campaign/<int:campaign_id>/delete",  methods=['POST'])
+@login_required
+def delete_campaign(campaign_id):
+	campaign = Campaign.query.get_or_404(campaign_id)
+	if campaign.author != current_user:
+		abort(403)
+	db.session.delete(campaign)
+	db.session.commit()
+	flash('Your campaign has been deleted', 'success')
+	return redirect(url_for('campaigns'))

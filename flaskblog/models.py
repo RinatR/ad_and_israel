@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
 	image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
 	password = db.Column(db.String(60), nullable=False)
 	posts = db.relationship('Post', backref='author', lazy=True)
+	campaigns = db.relationship('Campaign', backref='author', lazy=True)
 
 	def __repr__(self):
 		return f"User('{self.username}', '{self.email}', '{self.image_file}')"
@@ -28,3 +29,27 @@ class Post(db.Model):
 
 	def __repr__(self):
 		return f"Post('{self.title}', '{self.date_posted}')"
+
+class Campaign(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	title = db.Column(db.String(100), nullable=False)
+	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+	start_date = db.Column(db.Date, nullable=False)
+	finish_date = db.Column(db.Date, nullable=False)			
+	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+	banners = db.relationship('Banner', backref='parent_campaign', lazy=True)
+
+	def __repr__(self):
+		return f"Campaign('{self.title}', '{self.date_posted}', '{self.start_date}', '{self.finish_date}')"
+
+class Banner(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	title = db.Column(db.String(100), nullable=False)
+	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+	content = db.Column(db.Text, nullable=False)
+	click_link = db.Column(db.Text, nullable=False)
+	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+
+	def __repr__(self):
+		return f"Banner('{self.title}', '{self.date_posted}', '{self.campaign_id}')"
+

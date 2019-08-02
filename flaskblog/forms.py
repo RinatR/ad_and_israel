@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from flaskblog.models import User
+from flaskblog.models import User, Campaign
 
 class RegistrationForm(FlaskForm):
 	username = StringField('Username', validators=[DataRequired(), 
@@ -53,4 +53,10 @@ class PostForm(FlaskForm):
 	title = StringField('Title', validators=[DataRequired()])
 	content = TextAreaField('Content', validators=[DataRequired()])
 	image = FileField('Post Picture', validators=[FileAllowed(['jpg', 'png'])])
+	submit = SubmitField('Post')
+
+class CampaignForm(FlaskForm):
+	title = StringField('Title', validators=[DataRequired()])
+	start_date = DateField('Start Campaign', validators=[DataRequired()])	
+	finish_date = DateField('Finish Campaign', validators=[DataRequired()])
 	submit = SubmitField('Post')
