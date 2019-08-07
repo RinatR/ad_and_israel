@@ -33,6 +33,7 @@ class Post(db.Model):
 class Campaign(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	title = db.Column(db.String(100), nullable=False)
+	campaign_hash = db.Column(db.String(20), nullable=False)
 	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 	start_date = db.Column(db.Date, nullable=False)
 	finish_date = db.Column(db.Date, nullable=False)			
@@ -40,16 +41,17 @@ class Campaign(db.Model):
 	banners = db.relationship('Banner', backref='parent_campaign', lazy=True)
 
 	def __repr__(self):
-		return f"Campaign('{self.title}', '{self.date_posted}', '{self.start_date}', '{self.finish_date}')"
+		return f"Campaign('{self.title}', '{self.date_posted}', '{self.start_date}', '{self.finish_date}','{self.campaign_hash}')"
 
 class Banner(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	title = db.Column(db.String(100), nullable=False)
 	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-	content = db.Column(db.Text, nullable=False)
+	content = db.Column(db.Text, nullable=True)
+	image_file = db.Column(db.Text, nullable=False)
 	click_link = db.Column(db.Text, nullable=False)
 	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
 
 	def __repr__(self):
-		return f"Banner('{self.title}', '{self.date_posted}', '{self.campaign_id}')"
+		return f"Banner('{self.title}', '{self.date_posted}', '{self.campaign_id}', '{self.content}')"
 

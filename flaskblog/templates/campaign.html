@@ -15,12 +15,21 @@
     	</div>
     	<h2 class="article-title">{{ campaign.title }}</h2> 
       <p>Start date: {{ campaign.start_date}}</p>  
-      <p>Finish date: {{ campaign.finish_date}}</p>    	
+      <p>Finish date: {{ campaign.finish_date}}</p>  
+      <p>Hash: {{ campaign.campaign_hash}}</p>  	
   	</div>
-	</article>
-  <a href="{{ url_for('create_banner') }}">Add a banner</a>
+	</article>  
+  <a class="btn btn-secondary" href="{{ url_for('new_banner',campaign_id=campaign.id) }}">Add a banner</a>
+  
+  {% if banners %}
+  <h1>List of banners</h1>
+    {% for banner in banners %}
+      <a style="display: block" href="{{ url_for('banner', banner_id=banner.id)}}">{{ banner.title }}</a>
+      <div>{{banner.content}}</div>
+    {% endfor %}
+  {% endif%}
    <!-- Modal -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+   <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">

@@ -59,4 +59,11 @@ class CampaignForm(FlaskForm):
 	title = StringField('Title', validators=[DataRequired()])
 	start_date = DateField('Start Campaign', validators=[DataRequired()])	
 	finish_date = DateField('Finish Campaign', validators=[DataRequired()])
-	submit = SubmitField('Post')
+	submit = SubmitField('Create')
+
+class BannerForm(FlaskForm):
+	title = StringField('Title', validators=[DataRequired()])
+	image = FileField('Banner Image', validators=[FileAllowed(['jpg', 'png', 'gif'])])
+	click_link = StringField('Click link', validators=[DataRequired()])
+	submit = SubmitField('Create')
+
