@@ -39,6 +39,7 @@ class Campaign(db.Model):
 	finish_date = db.Column(db.Date, nullable=False)			
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 	banners = db.relationship('Banner', backref='parent_campaign', lazy=True)
+	status = db.Column(db.Boolean(), nullable=False, default=False)
 
 	def __repr__(self):
 		return f"Campaign('{self.title}', '{self.date_posted}', '{self.start_date}', '{self.finish_date}','{self.campaign_hash}')"
@@ -51,6 +52,7 @@ class Banner(db.Model):
 	image_file = db.Column(db.Text, nullable=False)
 	click_link = db.Column(db.Text, nullable=False)
 	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+	status = db.Column(db.Boolean(), nullable=False, default=False)
 
 	def __repr__(self):
 		return f"Banner('{self.title}', '{self.date_posted}', '{self.campaign_id}', '{self.content}')"

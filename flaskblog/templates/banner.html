@@ -4,14 +4,56 @@
   	<div class="media-body">    	
     	<h2 class="article-title">{{ banner.title }}</h2> 
       <div>{{ banner.content }}</div>
+      <div>{{ banner.status }}</div>
   	</div>
     {% if banner.parent_campaign.author == current_user %}
       <div>
         <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('update_banner', banner_id=banner.id)}}">Update</a>
-        <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
+        <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>        
       </div>
     {% endif %}
-	</article> 
+	</article>
+  <article class="media content-section">         
+  <div class="media-body">      
+    <h2 class="article-title">Stats of banner</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Bids</th>
+          <th scope="col">Impressions</th>
+          <th scope="col">Clicks</th>
+          <th scope="col">Spent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">01.01.2019</th>
+          <td>111</td>
+          <td>222</td>
+          <td>333</td>
+          <td>444</td>
+        </tr>
+        <tr>
+          <th scope="row">02.01.2019</th>
+          <td>555</td>
+          <td>666</td>
+          <td>777</td>
+          <td>888</td>
+        </tr>
+        <tr>
+          <th scope="row">03.01.2019</th>
+          <td>999</td>
+          <td>111</td>
+          <td>222</td>
+          <td>333</td>
+        </tr>
+      </tbody>
+    </table> 
+  </div>
+  </article>
+
+    
      <!-- Modal -->
   <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

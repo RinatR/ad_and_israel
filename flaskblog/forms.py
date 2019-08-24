@@ -4,6 +4,7 @@ from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flaskblog.models import User, Campaign
+from datetime import datetime
 
 class RegistrationForm(FlaskForm):
 	username = StringField('Username', validators=[DataRequired(), 
@@ -57,9 +58,13 @@ class PostForm(FlaskForm):
 
 class CampaignForm(FlaskForm):
 	title = StringField('Title', validators=[DataRequired()])
-	start_date = DateField('Start Campaign', validators=[DataRequired()])	
-	finish_date = DateField('Finish Campaign', validators=[DataRequired()])
+	start_date = DateField('Start Campaign',validators=[DataRequired()])	
+	finish_date = DateField('Finish Campaign',validators=[DataRequired()])
 	submit = SubmitField('Create')
+
+	def validate_date(self, start_date, finish_date):		
+		if start_date.data > finish_date.data: 
+			raise ValidationError('The start date of campaign can''t be  later than finish date. Please check the dates and try again')
 
 class BannerForm(FlaskForm):
 	title = StringField('Title', validators=[DataRequired()])

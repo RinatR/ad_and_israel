@@ -8,7 +8,9 @@ import secrets
 import os
 from PIL import Image
 from datetime import datetime
+from datetime import date
 from yattag import Doc
+import shutil
 
 # @app.route("/")
 @app.route("/home")
@@ -135,7 +137,7 @@ def new_post():
 			return redirect(url_for('home'))
 	
 	return render_template('create_post.html', title='New Post', form=form, 
-							legend='Update Post')
+							legend='New Post')
 
 @app.route("/post/<int:post_id>")
 def post(post_id):
@@ -190,11 +192,7 @@ def user_posts(username):
 def create_folder(campaign_hash):	
 	path = os.path.join(app.root_path, 'static/campaigns',campaign_hash)
 	if not os.path.exists(path):
-		os.makedirs(path)
-
-	# print(os.listdir(os.path.join(app.root_path, 'static/campaigns')))
-
-	
+		os.makedirs(path)	
 
 
 @app.route("/campaign/new", methods=['GET','POST'])
@@ -202,6 +200,7 @@ def create_folder(campaign_hash):
 def new_campaign():
 	form = CampaignForm()
 	if form.validate_on_submit():
+		
 		campaign_hash = secrets.token_hex(8)
 		campaign = Campaign(title=form.title.data, author=current_user, 
 							start_date=form.start_date.data, 
@@ -209,7 +208,7 @@ def new_campaign():
 							campaign_hash=campaign_hash)
 		db.session.add(campaign)
 		db.session.commit()
-		flash('Your campaign has been created', 'success')
+		flash('Your campaign has been created', 'success')		
 		create_folder(campaign_hash)
 		return redirect(url_for('campaigns'))
 	return render_template('create_campaign.html', title='New Campaign', form=form, 
@@ -225,7 +224,7 @@ def campaigns():
 def campaign(campaign_id):
 	campaign = Campaign.query.get_or_404(campaign_id)
 	banners = Banner.query.filter_by(campaign_id=campaign_id).all()
-	print(banners)
+	
 	return render_template('campaign.html', title=campaign.title, 
 		campaign=campaign, banners=banners)
 
@@ -250,6 +249,10 @@ def update_campaign(campaign_id):
 		return render_template('create_campaign.html', title='Update Campaign',
 							form=form, legend='Update Campaign')
 
+def delete_campaign_folder(campaign_hash):
+	path = os.path.join(app.root_path, 'static/campaigns',campaign_hash)
+	shutil.rmtree(path, ignore_errors=False)
+
 @app.route("/campaign/<int:campaign_id>/delete",  methods=['POST'])
 @login_required
 def delete_campaign(campaign_id):
@@ -258,6 +261,7 @@ def delete_campaign(campaign_id):
 		abort(403)
 	db.session.delete(campaign)
 	db.session.commit()
+	delete_campaign_folder(campaign.campaign_hash)
 	flash('Your campaign has been deleted', 'success')
 	return redirect(url_for('campaigns'))
 
@@ -310,6 +314,7 @@ def new_banner():
 		if form.image.data:
 			campaign = Campaign.query.get_or_404(campaign_id)
 			banner_image = save_banner_picture(form.image.data, campaign.campaign_hash)
+			print(banner_image)
 			banner_html = generate_html(form.click_link.data, banner_image)
 			banner = Banner(title=form.title.data, image_file=banner_image, 
 							click_link=form.click_link.data, 
@@ -365,6 +370,25 @@ def delete_banner(banner_id):
 	db.session.commit()
 	flash('Your banner has been deleted', 'success')
 	return redirect(url_for('campaign', campaign_id=banner.parent_campaign.id))
+
+
+@app.route("/campaign/<int:campaign_id>/start", methods=['POST'])
+@login_required
+def start_campaign(campaign_id):
+	campaign = Campaign.query.get_or_404(campaign_id)
+	campaign.status = True
+	db.session.commit()
+
+	return redirect(url_for('campaign', campaign_id=campaign.id))
+
+@app.route("/campaign/<int:campaign_id>/stop", methods=['POST'])
+@login_required
+def stop_campaign(campaign_id):
+	campaign = Campaign.query.get_or_404(campaign_id)
+	campaign.status = False
+	db.session.commit()
+
+	return redirect(url_for('campaign', campaign_id=campaign.id))
 
 
 

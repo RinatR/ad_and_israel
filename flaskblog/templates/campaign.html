@@ -10,26 +10,34 @@
             <div>
               <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('update_campaign', campaign_id=campaign.id)}}">Update</a>
               <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
+              {% if campaign.status == False %}
+                <button class="btn btn-info btn-sm m-1" type="button" data-toggle="modal" data-target="#startModal">Start Campaign</button>
+              {% else %}
+                <button class="btn btn-info btn-sm m-1" type="button" data-toggle="modal" data-target="#stopModal">Stop Campaign</button>
+              {% endif%}
             </div>
           {% endif %}         
     	</div>
     	<h2 class="article-title">{{ campaign.title }}</h2> 
       <p>Start date: {{ campaign.start_date}}</p>  
       <p>Finish date: {{ campaign.finish_date}}</p>  
-      <p>Hash: {{ campaign.campaign_hash}}</p>  	
+      {% if campaign.status == False %}      
+        <p>Status: Not Active</p>
+      {% else %}
+      <p>Status: Active</p>
+      {% endif %} 	
   	</div>
 	</article>  
-  <a class="btn btn-secondary" href="{{ url_for('new_banner',campaign_id=campaign.id) }}">Add a banner</a>
-  
+  <a class="btn btn-secondary" href="{{ url_for('new_banner',campaign_id=campaign.id) }}">Add a banner</a>  
   {% if banners %}
   <h1>List of banners</h1>
     {% for banner in banners %}
       <a style="display: block" href="{{ url_for('banner', banner_id=banner.id)}}">{{ banner.title }}</a>
-      <div>{{banner.content}}</div>
+      <div>{{banner.click_link}}</div>
     {% endfor %}
   {% endif%}
    <!-- Modal -->
-   <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby=  "deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -42,6 +50,46 @@
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           <form action="{{ url_for('delete_campaign', campaign_id=campaign.id) }}" method="POST">
             <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!--Start Campaign Modal-->
+  <div class="modal fade" id="startModal" tabindex="-1" role="dialog" aria-labelledby=  "deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="startModalLabel">Start Campaign?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('start_campaign', campaign_id=campaign.id) }}" method="POST">
+            <input class="btn btn-info" type="submit" value="Start">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!--Stop Campaign Modal-->
+  <div class="modal fade" id="stopModal" tabindex="-1" role="dialog" aria-labelledby=  "deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="stopModalLabel">Stop Campaign?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('stop_campaign', campaign_id=campaign.id) }}" method="POST">
+            <input class="btn btn-info" type="submit" value="Stop">
           </form>
         </div>
       </div>
