@@ -83,3 +83,28 @@ a.article-title:hover {
   width: 90%;
   height: 90%;
 }
+
+#ssp_checkboxes, #city_checkboxes {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+#ssp_checkboxes, #city_checkboxes label { 
+ margin-bottom: 0; 
+}
+
+#ssp_checkboxes, #city_checkboxes > li {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+#ssp_checkboxes, #city_checkboxes  input[type="checkbox"] {
+  margin-right:  10px;
+}
+
+.form-control-label {
+  font-weight: bold;
+
+}

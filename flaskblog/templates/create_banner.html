@@ -39,11 +39,25 @@
 	      {% else %}
 	        {{ form.click_link(class="form-control form-control-lg")}}
 	      {% endif %}
-	    </div>	  
+	    </div>
+	    {% if legend == "Update Banner" %}
+		  <div class="form-group">
+		  	{{ form.ssp_checkboxes.label(class="form-control-label")}}
+		    {{ form.ssp_checkboxes }}	    
+		  </div>
+		{% endif%}
+		{% if legend == "Update Banner" %}
+		  <div class="form-group">
+		  	{{ form.country_checkboxes.label(class="form-control-label")}}
+		    {{ form.country_checkboxes }}
+		  </div>
+		{% endif%} 	  
 	  </fieldset>
 	  <div class="form-group">
 	    {{ form.submit(class="btn btn-outline-info") }}	    
 	  </div>
+
+  
 	</form>
 </div>
 {% endblock %}

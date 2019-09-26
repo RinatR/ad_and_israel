@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+	{% for city in cities %}
+		<article class="media content-section">       	   
+    		<div class="media-body">      	
+	      		<h2>{{ city.name }}</h2> 	
+	      		<h2>{{ city.region }}</h2>
+	      		<h2>{{ city.parent_country.name }}</h2>           	  	
+    		</div>
+    		<div>
+        		<a class="btn btn-secondary btn-sm m-1" href="#">Update</a>        		     
+      		</div>
+		</article>
+	{% endfor %}
+
+
+{% endblock %}
+
+
