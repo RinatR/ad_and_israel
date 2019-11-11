@@ -3,7 +3,7 @@
 	<article class="media content-section">         
   	<div class="media-body">    	
     	<h2 class="article-title">{{ banner.title }}</h2> 
-      <div>{{ banner.content }}</div>
+      <iframe src="{{ url_for('static', filename='campaigns/' + banner.parent_campaign.campaign_hash + '/' + banner.trafkey + '.html') }}" width="{{banner.width}}" height="{{banner.height}}" > </iframe> 
       <div>{{ banner.status }}</div>
       <div>{{ banner.checkboxes }}</div>
   	</div>

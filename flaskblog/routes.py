@@ -1,8 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog import app, db, bcrypt
 from flaskblog.forms import (RegistrationForm, LoginForm, UpdateAccountForm, 
-                            PostForm, CampaignForm, BannerForm, SspForm, CountryForm)
-from flaskblog.models import User, Post, Campaign, Banner, Ssp, City, Country
+                            PostForm, CampaignForm, BannerForm, SspForm)
+from flaskblog.models import User, Post, Campaign, Banner, Ssp, Region
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets
 import os
@@ -11,6 +11,7 @@ from datetime import datetime
 from datetime import date
 from yattag import Doc
 import shutil
+from flask import jsonify
 
 # @app.route("/")
 @app.route("/home")
@@ -226,7 +227,7 @@ def campaigns():
 @login_required
 def campaign(campaign_id):
     campaign = Campaign.query.get_or_404(campaign_id)
-    banners = Banner.query.filter_by(campaign_id=campaign_id).all()
+    banners = Banner.query.filter_by(campaign_id=campaign_id).all()  
     
     return render_template('campaign.html', title=campaign.title, 
         campaign=campaign, banners=banners)
@@ -268,149 +269,6 @@ def delete_campaign(campaign_id):
     flash('Your campaign has been deleted', 'success')
     return redirect(url_for('campaigns'))
 
-# сохраняем картинку баннера в папку кампании
-def save_banner_picture(form_image, campaign_hash):
-    random_hex = secrets.token_hex(8) 
-    f_name, f_ext = os.path.splitext(form_image.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/campaigns',
-                                campaign_hash, picture_fn)
-    form_image.save(picture_path)
-
-    return picture_path
-
-# def write_html_to_file(content, campaign_hash):
-#   path = os.path.join(app.root_path, 'static/campaigns/', campaign_hash)
-#   print(path)
-
-#   filename = path + "/index.html"
-#   with open (filename, 'w') as f_obj:
-#       f_obj.write(content)
-
-def generate_html(banner_image, trafkey):  
-
-    click_count_url = f"https://log.rinads.com/?src=bw&s_act=c&trk={trafkey}" 
-    nurl_count_url = f"https://log.rinads.com/?src=bw&s_act=n&trk={trafkey}"
-    impression_count_url = f"https://log.rinads.com/?src=bw&s_act=s&trk={trafkey}"
-
-    doc, tag, text = Doc().tagtext()
-    doc.asis('<!DOCTYPE html>')
-    with tag('html'):
-        with tag('head'):
-            with tag('meta', charset="utf-8"):
-                with tag('meta', name="viewport", 
-                    content="width=device-width, initial-scale=1, shrink-to-fit=no"):
-                    with tag('body'):
-                        with tag('a', href=click_count_url):
-                            doc.stag('img',src=banner_image, klass="banner")
-    return doc.getvalue()
-
-    # write_html_to_file(doc.getvalue(), campaign_hash)
-
-@app.route("/banner/new", methods=['GET', 'POST'])
-@login_required
-def new_banner():
-    '''
-    функция создания баннера-картинки в кампании
-    1. получаем из БД нужную кампанию по ее id
-    2. сохраняем картинку баннера в файловой системе внутри папки с кампанией
-    3. генерируем html-файл с баннером и сохраняем его  в БД
-    '''
-    campaign_id = request.args.get('campaign_id',type=int)  
-    form = BannerForm()
-
-    if form.validate_on_submit():       
-        if form.image.data:
-            campaign = Campaign.query.get_or_404(campaign_id)
-            banner_image = save_banner_picture(form.image.data, campaign.campaign_hash)
-            
-            trafkey = secrets.token_hex(8) # здесь генерируем трафкей
-            banner_html = generate_html(banner_image, trafkey)          
-            banner = Banner(title=form.title.data, image_file=banner_image, 
-                            click_link=form.click_link.data, 
-                            campaign_id=campaign_id, content=banner_html, trafkey=trafkey)
-            db.session.add(banner)
-            db.session.commit()                 
-            flash('Your banner has been created', 'success')
-            return redirect(url_for('campaign',campaign_id=campaign_id))
-    return render_template('create_banner.html', form=form, legend='New Banner',
-        title='New Banner')
-
-# https://log.rinads.com/?src=bw&s_act=c&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
-
-# https://log.rinads.com/?src=bw&s_act=s&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
-
-# https://log.rinads.com/?src=bw&s_act=n&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
-
-@app.route("/banner/<int:banner_id>", methods=['GET', 'POST'])
-@login_required
-def banner(banner_id):
-    banner = Banner.query.get_or_404(banner_id)
-    
-    print(banner)
-    return render_template('banner.html', title=banner.title, banner=banner)
-
-@app.route("/banner/<int:banner_id>/update", methods=['GET', 'POST'])
-@login_required
-def update_banner(banner_id):
-    banner = Banner.query.get_or_404(banner_id) 
-
-    if banner.parent_campaign.author != current_user:
-        abort(403)
-    form = BannerForm()    
-    if form.validate_on_submit(): 
-
-        chosen_ssp_ids = [] 
-        for cx in form.ssp_checkboxes:
-            ssp = Ssp.query.filter_by(name=cx.data).first()            
-            if cx.checked == True:
-                chosen_ssp_ids.append(ssp)   
-        
-
-        # chosen_regions = [] 
-        # for cx in form.city_checkboxes:  # проходим по чекбоксам с регионами           
-        #     if cx.checked == True:   # если находим выбраный регион, то выбираем из БД все города, которые  относятся к этому региону             
-        #         cities = City.query.filter_by(region=cx.data).all()        
-        # for city in cities:
-        #     print(city.name)
-
-        if form.image.data:           
-            banner_image = save_banner_picture(form.image.data, 
-                            banner.parent_campaign.campaign_hash)
-            banner_html = generate_html(form.click_link.data, banner_image)
-            banner.content = banner_html          
-        banner.title = form.title.data
-        banner.click_link = form.click_link.data
-        
-        for x in chosen_ssp_ids:
-            banner.ssps.append(x)  
-        
-        db.session.add(banner)         
-        db.session.commit()
-        flash('Your banner has been updated', 'success')
-        
-        chosen_ssp_ids = []
-        return redirect(url_for('campaign', campaign_id=banner.parent_campaign.id))
-
-    if request.method == 'GET':
-        form.title.data = banner.title
-        form.click_link.data = banner.click_link       
-                
-    return render_template('create_banner.html', title='Update Banner',
-                            form=form, legend='Update Banner')
-
-@app.route("/banner/<int:banner_id>/delete", methods=['POST'])
-@login_required
-def delete_banner(banner_id):
-    banner = Banner.query.get_or_404(banner_id)
-    if banner.parent_campaign.author != current_user:
-        abort(403)
-    db.session.delete(banner)
-    db.session.commit()
-    flash('Your banner has been deleted', 'success')
-    return redirect(url_for('campaign', campaign_id=banner.parent_campaign.id))
-
-
 @app.route("/campaign/<int:campaign_id>/start", methods=['POST'])
 @login_required
 def start_campaign(campaign_id):
@@ -428,6 +286,202 @@ def stop_campaign(campaign_id):
     db.session.commit()
 
     return redirect(url_for('campaign', campaign_id=campaign.id))
+
+
+# сохраняем картинку баннера в папку кампании
+def save_banner_picture(form_image, campaign_hash):
+    random_hex = secrets.token_hex(8) 
+    f_name, f_ext = os.path.splitext(form_image.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/campaigns',
+                                campaign_hash, picture_fn)
+    form_image.save(picture_path)
+
+    return picture_path
+
+def write_html_to_file(content, campaign_hash, trafkey):
+  path = os.path.join(app.root_path, 'static/campaigns/', campaign_hash)
+  # print(path)
+
+  filename = path + "/" + trafkey + ".html"
+  with open (filename, 'w') as f_obj:
+      f_obj.write(content)
+
+def generate_html(banner_image, trafkey, campaign_hash):  
+
+    click_count_url = f"https://log.rinads.com/?src=bw&s_act=c&trk={trafkey}" 
+    nurl_count_url = f"https://log.rinads.com/?src=bw&s_act=n&trk={trafkey}"
+    impression_count_url = f"https://log.rinads.com/?src=bw&s_act=s&trk={trafkey}"
+
+    # print(banner_image.split('/'))
+    splitted_banner_image_path = banner_image.split('/')
+    doc, tag, text = Doc().tagtext()
+    doc.asis('<!DOCTYPE html>')
+    with tag('html'):
+        with tag('head'):
+            with tag('meta', charset="utf-8"):
+                with tag('meta', name="viewport", 
+                    content="width=device-width, initial-scale=1, shrink-to-fit=no"):
+                    with tag('body'):
+                        with tag('a', href=click_count_url, target="_blank"):
+                            doc.stag('img',src="/static/campaigns/"+campaign_hash+"/"+splitted_banner_image_path[-1], klass="banner")
+    return doc.getvalue()
+
+
+@app.route("/banner/new", methods=['GET', 'POST'])
+@login_required
+def new_banner():
+    '''
+    функция создания баннера-картинки в кампании
+    1. получаем из БД нужную кампанию по ее id
+    2. сохраняем картинку баннера в файловой системе внутри папки с кампанией
+    3. генерируем html-файл с баннером и сохраняем его  в БД
+    '''
+    campaign_id = request.args.get('campaign_id',type=int)  
+    
+    form = BannerForm()
+    if form.validate_on_submit(): 
+        chosen_ssp_ids = [] 
+        for cx in form.ssp_checkboxes:
+            ssp = Ssp.query.filter_by(name=cx.data).first()            
+            if cx.checked == True:
+                chosen_ssp_ids.append(ssp) 
+
+        if form.image.data:
+            campaign = Campaign.query.get_or_404(campaign_id)            
+            banner_image = save_banner_picture(form.image.data, campaign.campaign_hash)            
+            trafkey = secrets.token_hex(8) # здесь генерируем трафкей
+            banner_html = generate_html(banner_image, trafkey, campaign.campaign_hash)    
+            write_html_to_file(banner_html,campaign.campaign_hash, trafkey)     
+            banner = Banner(title=form.title.data, image_file=banner_image, width=form.width.data, 
+                            height=form.height.data, click_link=form.click_link.data, audit_link=form.audit_link.data,
+                            campaign_id=campaign_id, content=banner_html, trafkey=trafkey)
+
+            #  добавляем выбранные ссп к баннеру
+            for x in chosen_ssp_ids:
+                banner.ssps.append(x)
+
+            #  добавляем выбранные регионы к баннеру
+            for region in form.region_list.data:
+                reg = Region.query.filter_by(id=region).first()            
+                banner.regions.append(reg)
+            
+            db.session.add(banner)
+            db.session.commit()                 
+            flash('Your banner has been created', 'success')
+            return redirect(url_for('campaign',campaign_id=campaign_id))
+    return render_template('create_banner.html', form=form, legend='New Banner', title='New Banner')
+
+
+
+# https://log.rinads.com/?src=bw&s_act=c&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
+
+# https://log.rinads.com/?src=bw&s_act=s&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
+
+# https://log.rinads.com/?src=bw&s_act=n&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
+
+@app.route("/banner/<int:banner_id>", methods=['GET', 'POST'])
+@login_required
+def banner(banner_id):
+    banner = Banner.query.get_or_404(banner_id)
+    # for b in banner.ssps:
+    #     print(b.name)
+    for b in banner.regions:
+        print(b.name)
+    return render_template('banner.html', title=banner.title, banner=banner)
+
+@app.route("/banner/<int:banner_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_banner(banner_id):
+    banner = Banner.query.get_or_404(banner_id) 
+
+    if banner.parent_campaign.author != current_user:
+        abort(403)
+    form = BannerForm()    
+    if form.validate_on_submit():        
+
+        if form.image.data:           
+            banner_image = save_banner_picture(form.image.data, 
+                            banner.parent_campaign.campaign_hash)
+            banner_html = generate_html(form.click_link.data, banner_image)
+            banner.content = banner_html          
+        banner.title = form.title.data
+        banner.width = form.width.data
+        banner.height = form.height.data
+        banner.click_link = form.click_link.data
+        banner.audit_link = form.audit_link.data
+
+
+        selected_ssp_ids = [] 
+        unselected_ssp_ids = []
+        for cx in form.ssp_checkboxes:
+            ssp = Ssp.query.filter_by(name=cx.data).first()            
+            if cx.checked == True:
+                selected_ssp_ids.append(ssp) 
+            else:
+                unselected_ssp_ids.append(ssp)
+        
+        # добавляем выбранные ссп к конкретному баннеру
+        for x in selected_ssp_ids:
+            banner.ssps.append(x)  
+
+        # проверяем, назначены ли уже в текущем баннере ссп, которые сейчас не выбраны в чекбоксах и удаляем их из БД, если таковые имеются.
+        for x in unselected_ssp_ids:
+            if x in banner.ssps:
+                banner.ssps.remove(x)
+
+        #  определяем выбранные и невыбранные регионы из выпадающего списка и пишем их в соответствующий список
+        selected_regions = []
+        unselected_regions = []
+        for region in form.region_list.choices:
+            if region[0] in form.region_list.data:
+                reg = Region.query.filter_by(id=region[0]).first()
+                selected_regions.append(reg)
+            else:
+                reg = Region.query.filter_by(id=region[0]).first()
+                unselected_regions.append(reg)
+
+
+        # добавляем выбранные регионы к конкретному баннеру
+        for region in selected_regions:
+            banner.regions.append(region)
+
+        # проверяем, назначены ли уже в текущем баннере регионы, которые сейчас не выбраны в выпадающем списке с регионами и удаляем их из БД, если таковые имеются.
+        for x in unselected_regions:
+            if x in banner.regions:
+                banner.regions.remove(x)
+
+
+       
+        
+        db.session.add(banner)         
+        db.session.commit()
+        flash('Your banner has been updated', 'success')        
+    
+        return redirect(url_for('campaign', campaign_id=banner.parent_campaign.id))
+
+
+
+    if request.method == 'GET':
+        form.title.data = banner.title
+        form.width.data = banner.width
+        form.height.data = banner.height    
+        form.click_link.data = banner.click_link
+        form.audit_link.data = banner.audit_link        
+                
+    return render_template('create_banner.html', title='Update Banner',
+                            form=form, legend='Update Banner')
+
+@app.route("/banner/<int:banner_id>/delete", methods=['POST'])
+@login_required
+def delete_banner(banner_id):
+    banner = Banner.query.get_or_404(banner_id)
+    if banner.parent_campaign.author != current_user:
+        abort(403)
+    db.session.delete(banner)
+    db.session.commit()
+    flash('Your banner has been deleted', 'success')
+    return redirect(url_for('campaign', campaign_id=banner.parent_campaign.id))
 
 @app.route("/ssp/new", methods=['GET', 'POST'])
 @login_required
@@ -449,12 +503,12 @@ def ssps():
     ssps = Ssp.query.all()
     return render_template('ssps.html', ssps=ssps)
 
-# @app.route("/ssp/<int:ssp_id>", methods=['GET', 'POST'])
-# @login_required
-# def ssp(ssp_id):
-#     ssp = SSP.query.get_or_404(ssp_id)
+@app.route("/ssp/<int:ssp_id>", methods=['GET', 'POST'])
+@login_required
+def ssp(ssp_id):
+    ssp = SSP.query.get_or_404(ssp_id)
 
-#     return render_template('ssp.html', ssp=ssp)
+    return render_template('ssp.html', ssp=ssp)
 
 
 @app.route("/ssp/<int:ssp_id>/update",  methods=['GET', 'POST'])
@@ -485,32 +539,124 @@ def delete_ssp(ssp_id):
     flash('The SSP has been deleted', 'success')
     return redirect(url_for('ssps'))
 
+# @app.route("/geo/new", methods=['GET', 'POST'])
+# @login_required
+# def new_country():
+#     form = CountryForm()
+
+#     if form.validate_on_submit():
+#         country = Country(name=form.name.data.lower())
+
+#         db.session.add(country)
+#         db.session.commit()
+#         flash('The new country has been created', 'success')
+
+#         return redirect(url_for('home'))
+#     return render_template('create_geo.html', form=form, legend='New Geo')
+
+# @app.route("/cities")
+# @login_required
+# def cities():    
+#     cities = City.query.filter_by(region='татарстан')
+#     # cities = City.query.order_by(City.name.asc())
+
+#     return render_template('cities.html', cities=cities)
 
 
 
-@app.route("/geo/new", methods=['GET', 'POST'])
-@login_required
-def new_country():
-    form = CountryForm()
+@app.route("/regions", methods=['GET'])
 
-    if form.validate_on_submit():
-        country = Country(name=form.name.data.lower())
+def search_regions():    
+    regions = Region.query.all()            
+    region_dict = {}
+    region_list = []
+    for region in regions:
+        region_dict[region.id] = region.name   
 
-        db.session.add(country)
-        db.session.commit()
-        flash('The new country has been created', 'success')
+    region_list.append(region_dict)
+    response = jsonify(region_list)
+    
+    return response
+    
+# tasks = [
+#     {
+#         'id': 1,
+#         'title': u'Buy groceries',
+#         'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
+#         'done': False
+#     },
+#     {
+#         'id': 2,
+#         'title': u'Learn Python',
+#         'description': u'Need to find a good Python tutorial on the web', 
+#         'done': False
+#     }
+# ]
 
-        return redirect(url_for('home'))
-    return render_template('create_geo.html', form=form, legend='New Geo')
+# @app.route('/rinatads/api/v1.0/banners', methods=['GET'])
+# def get_banners():
+#     banners = Banner.query.all()    
+#     banners_list = []
+    
+#     for banner in banners:
+#         banners_dict = {}
+#         banners_dict['id'] = banner.id
+#         banners_dict['title'] = banner.title
+#         banners_dict['width'] = banner.width
+#         banners_dict['height'] = banner.height        
+#         banners_list.append(banners_dict)
+    
+#     response = jsonify(banners_list)
+    
+#     return response
 
-@app.route("/cities")
-@login_required
-def cities():    
-    cities = City.query.filter_by(region='татарстан')
-    # cities = City.query.order_by(City.name.asc())
 
-    return render_template('cities.html', cities=cities)
+# @app.route('/rinatads/api/v1.0/banners/<int:banner_id>', methods=['GET'])
+# def get_banner(banner_id):
+#     banner = Banner.query.filter_by(id=banner_id).first()   
+    
+#     banner_dict = {}
+#     banner_dict['id'] = banner.id
+#     banner_dict['title'] = banner.title
+#     banner_dict['width'] = banner.width
+#     banner_dict['height'] = banner.height 
+    
+#     return jsonify(banner_dict)
 
 
+# @app.route('/rinatads/api/v1.0/banners', methods=['POST'])
+# def create_banner():    
+#     task = {
+#         'id': tasks[-1]['id'] + 1,
+#         'title': request.json['title'],
+#         'description': request.json.get('description', ""),
+#         'done': False
+#     }
+#     tasks.append(task)
+#     return jsonify({'task': task}), 201
 
+# @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
+# def update_task(task_id):
+#     task = [task for task in tasks if task['id'] == task_id]
+#     if len(task) == 0:
+#         abort(404)
+#     if not request.json:
+#         abort(400)
+#     if 'title' in request.json and type(request.json['title']) != unicode:
+#         abort(400)
+#     if 'description' in request.json and type(request.json['description']) is not unicode:
+#         abort(400)
+#     if 'done' in request.json and type(request.json['done']) is not bool:
+#         abort(400)
+#     task[0]['title'] = request.json.get('title', task[0]['title'])
+#     task[0]['description'] = request.json.get('description', task[0]['description'])
+#     task[0]['done'] = request.json.get('done', task[0]['done'])
+#     return jsonify({'task': task[0]})
 
+# @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
+# def delete_task(task_id):
+#     task = [task for task in tasks if task['id'] == task_id]
+#     if len(task) == 0:
+#         abort(404)
+#     tasks.remove(task[0])
+#     return jsonify({'result': True})

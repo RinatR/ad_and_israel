@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
+
 <div class="content-section">
 	<form action="" method="POST" enctype="multipart/form-data">
 	  {{ form.hidden_tag()}}
@@ -16,6 +17,32 @@
 	        </div>
 	      {% else %}
 	        {{ form.title(class="form-control form-control-lg")}}
+	      {% endif %}
+	    </div>
+	    <div class="form-group">
+	      {{ form.width.label(class="form-control-label")}}
+	      {% if form.width.errors %}
+	        {{ form.width(class="form-control form-control-lg is-invalid")}}
+	        <div class="invalid-feedback">
+	          {% for error in form.width.errors %}
+	            <span> {{ error }}</span>
+	          {% endfor %}
+	        </div>
+	      {% else %}
+	        {{ form.width(class="form-control form-control-lg")}}
+	      {% endif %}
+	    </div>
+	    <div class="form-group">
+	      {{ form.height.label(class="form-control-label")}}
+	      {% if form.height.errors %}
+	        {{ form.height(class="form-control form-control-lg is-invalid")}}
+	        <div class="invalid-feedback">
+	          {% for error in form.height.errors %}
+	            <span> {{ error }}</span>
+	          {% endfor %}
+	        </div>
+	      {% else %}
+	        {{ form.height(class="form-control form-control-lg")}}
 	      {% endif %}
 	    </div>
 	    <div class="form-group">
@@ -40,26 +67,76 @@
 	        {{ form.click_link(class="form-control form-control-lg")}}
 	      {% endif %}
 	    </div>
-	    {% if legend == "Update Banner" %}
-		  <div class="form-group">
+	    <div class="form-group">
+	      {{ form.audit_link.label(class="form-control-label")}}
+	      {% if form.audit_link.errors %}
+	        {{ form.audit_link(class="form-control form-control-lg is-invalid")}}
+	        <div class="invalid-feedback">
+	          {% for error in form.audit_link.errors %}
+	            <span> {{ error }}</span>
+	          {% endfor %}
+	        </div>
+	      {% else %}
+	        {{ form.audit_link(class="form-control form-control-lg")}}
+	      {% endif %}
+	    </div>
+	    <div class="form-group">
 		  	{{ form.ssp_checkboxes.label(class="form-control-label")}}
-		    {{ form.ssp_checkboxes }}	    
-		  </div>
-		{% endif%}
-		{% if legend == "Update Banner" %}
-		  <div class="form-group">
-		  	{{ form.country_checkboxes.label(class="form-control-label")}}
-		    {{ form.country_checkboxes }}
-		  </div>
-		{% endif%} 	  
+		    {{ form.ssp_checkboxes }}
+		</div>
+		<div class="form-group">
+		  	{{ form.region_list.label(class="form-control-label")}}
+		    {{ form.region_list }}
+		</div>
+		<!-- <div class="form-group">
+			<label for="myInput" class="form-control-label">Available regions</label>	
+		  	<div class="autocomplete" style="width:300px;">
+    			<input id="myInput" type="text" name="myregions" placeholder="Enter region name" id="myregions">
+    			<div class="badges" id="badges" name="badges"></div>
+		  	</div>
+		</div> -->   	  
 	  </fieldset>
 	  <div class="form-group">
 	    {{ form.submit(class="btn btn-outline-info") }}	    
-	  </div>
-
-  
+	  </div>  
 	</form>
 </div>
+
+
+
+
+<!-- <script>
+ 	var regions = getRegions();
+	autocomplete(document.getElementById("myInput"), regions);
+
+	function getRegions() {
+
+      var xhr = new XMLHttpRequest();
+      url = "http://localhost:5000/regions";      
+      xhr.open('GET', url, false);
+      xhr.send();
+
+      if (xhr.status != 200) {
+        alert( xhr.status + ': ' + xhr.statusText );
+      }
+      else {
+        var response = xhr.responseText;
+        regions= JSON.parse(response);               
+        return proccessJSON(regions)       
+      }
+    }
+   
+	function proccessJSON(regions) {
+	  var regionArray = [];
+	  for (var key in regions[0]) {     
+	    regionArray.push(regions[0][key]);
+	  }
+	  return regionArray;
+	}
+</script>  -->
+
 {% endblock %}
+
+
 
 

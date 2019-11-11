@@ -28,7 +28,8 @@
       {% endif %} 	
   	</div>
 	</article>  
-  <a class="btn btn-secondary" href="{{ url_for('new_banner',campaign_id=campaign.id) }}">Add a banner</a>  
+  <a class="btn btn-secondary" href="{{ url_for('new_banner',campaign_id=campaign.id) }}">Add html banner</a>
+   
   {% if banners %}
   <h1>List of banners</h1>
     {% for banner in banners %}

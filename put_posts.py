@@ -1,7 +1,8 @@
 import json 
 
-# from flaskblog.models import City
-# from flaskblog import db
+from flaskblog.models import Region, Country
+from flaskblog import db
+
 
 # with open('posts.json') as f: 
 # 	data = json.load(f) 
@@ -12,14 +13,24 @@ import json
 # 			db.session.add(post) 
 # 			db.session.commit()
 
-with open('cities.json') as f: 
+with open('russia.json') as f: 
 	data = json.load(f) 
-	city_list = []
-	for city in data: 	
-		if city['country'] == "RU":
-			city_list.append(city['name'])
-		# city = City(name=city['city'].lower(), region=city['region'].lower(), country_id=1) 
-		# db.session.add(city) 
-		# db.session.commit()
-	city_list.sort()
-	print(city_list)
+	regions_list = []
+	for r in data:
+		regions_list.append(r['region'])
+
+	unq_regions = set(regions_list)
+	
+	sorted_regions = sorted(unq_regions)
+	for r in sorted_regions:
+		# print(r)		
+			region = Region(name=r.lower()) 
+			db.session.add(region) 
+			db.session.commit()
+
+# regions = Region.query.all()
+# print(regions)
+
+
+
+

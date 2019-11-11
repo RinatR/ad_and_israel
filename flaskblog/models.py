@@ -55,27 +55,32 @@ ssps = db.Table('ssps',
     db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
 )
 
-countries = db.Table('geos',
-    db.Column('country_id', db.Integer, db.ForeignKey('country.id'), primary_key=True),
+regions = db.Table('regions',
+    db.Column('region_id', db.Integer, db.ForeignKey('region.id'), primary_key=True),
     db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
 )
 
+# countries = db.Table('geos',
+#     db.Column('country_id', db.Integer, db.ForeignKey('country.id'), primary_key=True),
+#     db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
+# )
 
 
 class Banner(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	title = db.Column(db.String(100), nullable=False)
-	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+	width = db.Column(db.Integer, nullable=False)
+	height = db.Column(db.Integer, nullable=False)	
+	image_file = db.Column(db.Text, nullable=False)	
 	content = db.Column(db.Text, nullable=True)
-	image_file = db.Column(db.Text, nullable=False)
 	click_link = db.Column(db.Text, nullable=False)
-	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+	audit_link = db.Column(db.Text, nullable=False)	
 	status = db.Column(db.Boolean(), nullable=False, default=False)
 	trafkey = db.Column(db.String(20), nullable=False)
-	ssps = db.relationship('Ssp', secondary=ssps, lazy='subquery',
-	    backref=db.backref('banners', lazy=True))
-	countries = db.relationship('Country', secondary=countries, lazy='subquery',
-	    backref=db.backref('banners', lazy=True))
+	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+	ssps = db.relationship('Ssp', secondary=ssps, lazy='subquery', backref=db.backref('banners', lazy=True))
+	regions = db.relationship('Region', secondary=regions, lazy='subquery', backref=db.backref('banners', lazy=True))
 
 class Ssp(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -83,28 +88,35 @@ class Ssp(db.Model):
 	type = db.Column(db.String(20), nullable=False)		
 	endpoint_url = db.Column(db.String(100), nullable=False)
 
+
+
 class Country(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(100), nullable=False)
-	cities = db.relationship('City', backref='parent_country', lazy=True)
+	# regions = db.relationship('Region', backref='parent_country', lazy=True)
 
-class City(db.Model):
+class Region(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(100), nullable=False)
-	region = db.Column(db.String(200), nullable=False)
-	country_id = db.Column(db.Integer(), db.ForeignKey('country.id'), nullable=False)
+	# country_id = db.Column(db.Integer(), db.ForeignKey('country.id'), nullable=False)
+	# cities = db.relationship('City', backref='parent_region', lazy=True)
 
-class Browser(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(100), nullable=False)
+# class City(db.Model):
+# 	id = db.Column(db.Integer, primary_key=True)
+# 	name = db.Column(db.String(100), nullable=False)	
+# 	region_id = db.Column(db.Integer(), db.ForeignKey('region.id'), nullable=False)
 
-class Os(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(100), nullable=False)
+# class Browser(db.Model):
+# 	id = db.Column(db.Integer, primary_key=True)
+# 	name = db.Column(db.String(100), nullable=False)
 
-class Domain(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String(100), nullable=False)	
+# class Os(db.Model):
+# 	id = db.Column(db.Integer, primary_key=True)
+# 	name = db.Column(db.String(100), nullable=False)
+
+# class Domain(db.Model):
+# 	id = db.Column(db.Integer, primary_key=True)
+# 	name = db.Column(db.String(100), nullable=False)	
 	
 
 
