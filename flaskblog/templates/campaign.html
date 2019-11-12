@@ -8,7 +8,7 @@
       		<small class="text-muted">{{ campaign.date_posted.strftime('%Y-%m-%d') }}</small>
           {% if campaign.author == current_user %}
             <div>
-              <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('update_campaign', campaign_id=campaign.id)}}">Update</a>
+              <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('campaigns.update_campaign', campaign_id=campaign.id)}}">Update</a>
               <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
               {% if campaign.status == False %}
                 <button class="btn btn-info btn-sm m-1" type="button" data-toggle="modal" data-target="#startModal">Start Campaign</button>
@@ -28,12 +28,12 @@
       {% endif %} 	
   	</div>
 	</article>  
-  <a class="btn btn-secondary" href="{{ url_for('new_banner',campaign_id=campaign.id) }}">Add html banner</a>
+  <a class="btn btn-secondary" href="{{ url_for('banners.new_banner',campaign_id=campaign.id) }}">Add html banner</a>
    
   {% if banners %}
   <h1>List of banners</h1>
     {% for banner in banners %}
-      <a style="display: block" href="{{ url_for('banner', banner_id=banner.id)}}">{{ banner.title }}</a>
+      <a style="display: block" href="{{ url_for('banners.banner', banner_id=banner.id)}}">{{ banner.title }}</a>
       <div>{{banner.click_link}}</div>
     {% endfor %}
   {% endif%}
@@ -50,7 +50,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <form action="{{ url_for('delete_campaign', campaign_id=campaign.id) }}" method="POST">
+          <form action="{{ url_for('campaigns.delete_campaign', campaign_id=campaign.id) }}" method="POST">
             <input class="btn btn-danger" type="submit" value="Delete">
           </form>
         </div>
@@ -70,7 +70,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <form action="{{ url_for('start_campaign', campaign_id=campaign.id) }}" method="POST">
+          <form action="{{ url_for('campaigns.start_campaign', campaign_id=campaign.id) }}" method="POST">
             <input class="btn btn-info" type="submit" value="Start">
           </form>
         </div>
@@ -90,7 +90,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <form action="{{ url_for('stop_campaign', campaign_id=campaign.id) }}" method="POST">
+          <form action="{{ url_for('campaigns.stop_campaign', campaign_id=campaign.id) }}" method="POST">
             <input class="btn btn-info" type="submit" value="Stop">
           </form>
         </div>

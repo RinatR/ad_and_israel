@@ -9,7 +9,7 @@
   	</div>
     {% if banner.parent_campaign.author == current_user %}
       <div>
-        <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('update_banner', banner_id=banner.id)}}">Update</a>
+        <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('banners.update_banner', banner_id=banner.id)}}">Update</a>
         <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>        
       </div>
     {% endif %}
@@ -71,7 +71,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <form action="{{ url_for('delete_banner', banner_id=banner.id) }}" method="POST">
+        <form action="{{ url_for('banners.delete_banner', banner_id=banner.id) }}" method="POST">
           <input class="btn btn-danger" type="submit" value="Delete">
         </form>
       </div>

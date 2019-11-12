@@ -8,7 +8,7 @@
         		<a class="mr-2" href="#">{{ campaign.author.username }}</a>
         		<small class="text-muted">{{ campaign.date_posted.strftime('%Y-%m-%d') }}</small>
       	</div>
-      	<h2><a class="article-title" href="{{ url_for('campaign', campaign_id=campaign.id) }}">{{ campaign.title }}</a></h2>  
+      	<h2><a class="article-title" href="{{ url_for('campaigns.campaign', campaign_id=campaign.id) }}">{{ campaign.title }}</a></h2>  
         <p>Start date: {{ campaign.start_date}}</p>  
         <p>Finish date: {{ campaign.finish_date}}</p>   	
     	</div>
