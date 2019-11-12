@@ -157,3 +157,101 @@ def delete_banner(banner_id):
     db.session.commit()
     flash('Your banner has been deleted', 'success')
     return redirect(url_for('campaigns.campaign', campaign_id=banner.parent_campaign.id))
+
+
+# @app.route("/regions", methods=['GET'])
+
+# def search_regions():    
+#     regions = Region.query.all()            
+#     region_dict = {}
+#     region_list = []
+#     for region in regions:
+#         region_dict[region.id] = region.name   
+
+#     region_list.append(region_dict)
+#     response = jsonify(region_list)
+    
+#     return response
+    
+# tasks = [
+#     {
+#         'id': 1,
+#         'title': u'Buy groceries',
+#         'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
+#         'done': False
+#     },
+#     {
+#         'id': 2,
+#         'title': u'Learn Python',
+#         'description': u'Need to find a good Python tutorial on the web', 
+#         'done': False
+#     }
+# ]
+
+# @app.route('/rinatads/api/v1.0/banners', methods=['GET'])
+# def get_banners():
+#     banners = Banner.query.all()    
+#     banners_list = []
+    
+#     for banner in banners:
+#         banners_dict = {}
+#         banners_dict['id'] = banner.id
+#         banners_dict['title'] = banner.title
+#         banners_dict['width'] = banner.width
+#         banners_dict['height'] = banner.height        
+#         banners_list.append(banners_dict)
+    
+#     response = jsonify(banners_list)
+    
+#     return response
+
+
+# @app.route('/rinatads/api/v1.0/banners/<int:banner_id>', methods=['GET'])
+# def get_banner(banner_id):
+#     banner = Banner.query.filter_by(id=banner_id).first()   
+    
+#     banner_dict = {}
+#     banner_dict['id'] = banner.id
+#     banner_dict['title'] = banner.title
+#     banner_dict['width'] = banner.width
+#     banner_dict['height'] = banner.height 
+    
+#     return jsonify(banner_dict)
+
+
+# @app.route('/rinatads/api/v1.0/banners', methods=['POST'])
+# def create_banner():    
+#     task = {
+#         'id': tasks[-1]['id'] + 1,
+#         'title': request.json['title'],
+#         'description': request.json.get('description', ""),
+#         'done': False
+#     }
+#     tasks.append(task)
+#     return jsonify({'task': task}), 201
+
+# @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
+# def update_task(task_id):
+#     task = [task for task in tasks if task['id'] == task_id]
+#     if len(task) == 0:
+#         abort(404)
+#     if not request.json:
+#         abort(400)
+#     if 'title' in request.json and type(request.json['title']) != unicode:
+#         abort(400)
+#     if 'description' in request.json and type(request.json['description']) is not unicode:
+#         abort(400)
+#     if 'done' in request.json and type(request.json['done']) is not bool:
+#         abort(400)
+#     task[0]['title'] = request.json.get('title', task[0]['title'])
+#     task[0]['description'] = request.json.get('description', task[0]['description'])
+#     task[0]['done'] = request.json.get('done', task[0]['done'])
+#     return jsonify({'task': task[0]})
+
+# @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
+# def delete_task(task_id):
+#     task = [task for task in tasks if task['id'] == task_id]
+#     if len(task) == 0:
+#         abort(404)
+#     tasks.remove(task[0])
+#     return jsonify({'result': True})

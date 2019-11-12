@@ -1,2 +1,3 @@
 static/posts_pics/
 static/campaigns
+*.pyc
