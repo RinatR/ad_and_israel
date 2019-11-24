@@ -1,7 +1,7 @@
-from flaskblog import create_app
+from flaskblog import app
 
-app = create_app()
-app.app_context().push()
+# app = create_app()
+# app.app_context().push()
 
 if __name__ == '__main__':
 	app.run(debug=True)

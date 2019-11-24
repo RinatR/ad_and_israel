@@ -61,6 +61,11 @@ regions = db.Table('regions',
     db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
 )
 
+operating_systems = db.Table('operating_systems',
+    db.Column('os_id', db.Integer, db.ForeignKey('os.id'), primary_key=True),
+    db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
+)
+
 # countries = db.Table('geos',
 #     db.Column('country_id', db.Integer, db.ForeignKey('country.id'), primary_key=True),
 #     db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
@@ -82,14 +87,13 @@ class Banner(db.Model):
 	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
 	ssps = db.relationship('Ssp', secondary=ssps, lazy='subquery', backref=db.backref('banners', lazy=True))
 	regions = db.relationship('Region', secondary=regions, lazy='subquery', backref=db.backref('banners', lazy=True))
+	operating_systems = db.relationship('Os', secondary=operating_systems, lazy='subquery', backref=db.backref('banners', lazy=True))
 
 class Ssp(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(100), nullable=False)	
 	type = db.Column(db.String(20), nullable=False)		
 	endpoint_url = db.Column(db.String(100), nullable=False)
-
-
 
 class Country(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -102,6 +106,10 @@ class Region(db.Model):
 	# country_id = db.Column(db.Integer(), db.ForeignKey('country.id'), nullable=False)
 	# cities = db.relationship('City', backref='parent_region', lazy=True)
 
+class Os(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String(100), nullable=False)
+
 # class City(db.Model):
 # 	id = db.Column(db.Integer, primary_key=True)
 # 	name = db.Column(db.String(100), nullable=False)	
@@ -111,9 +119,7 @@ class Region(db.Model):
 # 	id = db.Column(db.Integer, primary_key=True)
 # 	name = db.Column(db.String(100), nullable=False)
 
-# class Os(db.Model):
-# 	id = db.Column(db.Integer, primary_key=True)
-# 	name = db.Column(db.String(100), nullable=False)
+
 
 # class Domain(db.Model):
 # 	id = db.Column(db.Integer, primary_key=True)

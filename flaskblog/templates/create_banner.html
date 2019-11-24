@@ -80,6 +80,7 @@
 	        {{ form.audit_link(class="form-control form-control-lg")}}
 	      {% endif %}
 	    </div>
+	    <h2>Targetings</h2>
 	    <div class="form-group">
 		  	{{ form.ssp_checkboxes.label(class="form-control-label")}}
 		    {{ form.ssp_checkboxes }}
@@ -87,6 +88,10 @@
 		<div class="form-group">
 		  	{{ form.region_list.label(class="form-control-label")}}
 		    {{ form.region_list }}
+		</div>
+		<div class="form-group">
+		  	{{ form.os_list.label(class="form-control-label")}}
+		    {{ form.os_list }}
 		</div>
 		<!-- <div class="form-group">
 			<label for="myInput" class="form-control-label">Available regions</label>	

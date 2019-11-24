@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, SubmitField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, ValidationError
-from flaskblog.models import Ssp, Country, Region
+from flaskblog.models import Ssp, Country, Region, Os
 from datetime import datetime
 from wtforms import SelectMultipleField, widgets
 
@@ -46,6 +46,15 @@ class BannerForm(FlaskForm):
 		region_list.append(region_dict)
 			
 	region_items = [(str(value['id']), value['name']) for value in region_list]	
-	
-	# region_checkboxes = MultiCheckboxField('Available regions', choices=region_items)
 	region_list = SelectMultipleField(u'Available regions', choices=region_items,validators=[DataRequired()])
+
+	operating_systems = Os.query.all()			
+	os_list = []
+	for os in operating_systems:
+		os_dict = {}
+		os_dict['id'] = os.id
+		os_dict['name'] = os.name
+		os_list.append(os_dict)
+			
+	os_items = [(str(value['id']), value['name']) for value in os_list]	
+	os_list = SelectMultipleField(u'Available operating systems', choices=os_items,validators=[DataRequired()])

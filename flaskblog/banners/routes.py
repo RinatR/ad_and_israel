@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, login_required
 from flaskblog import db
 import secrets
-from flaskblog.models import Banner, Ssp, Campaign, Region
+from flaskblog.models import Banner, Ssp, Campaign, Region, Os
 from flaskblog.banners.forms import BannerForm
 from flaskblog.banners.utils import save_banner_picture, write_html_to_file, generate_html
 
@@ -45,6 +45,11 @@ def new_banner():
             for region in form.region_list.data:
                 reg = Region.query.filter_by(id=region).first()            
                 banner.regions.append(reg)
+
+             #  добавляем выбранные операционные системы к баннеру
+            for os in form.os_list.data:
+                oper_sys = Os.query.filter_by(id=os).first()            
+                banner.operating_systems.append(oper_sys)
             
             db.session.add(banner)
             db.session.commit()                 
@@ -66,8 +71,7 @@ def banner(banner_id):
     banner = Banner.query.get_or_404(banner_id)
     # for b in banner.ssps:
     #     print(b.name)
-    for b in banner.regions:
-        print(b.name)
+    print(banner.operating_systems)
     return render_template('banner.html', title=banner.title, banner=banner)
 
 @banners.route("/banner/<int:banner_id>/update", methods=['GET', 'POST'])
@@ -121,7 +125,6 @@ def update_banner(banner_id):
                 reg = Region.query.filter_by(id=region[0]).first()
                 unselected_regions.append(reg)
 
-
         # добавляем выбранные регионы к конкретному баннеру
         for region in selected_regions:
             banner.regions.append(region)
@@ -129,7 +132,28 @@ def update_banner(banner_id):
         # проверяем, назначены ли уже в текущем баннере регионы, которые сейчас не выбраны в выпадающем списке с регионами и удаляем их из БД, если таковые имеются.
         for x in unselected_regions:
             if x in banner.regions:
-                banner.regions.remove(x)       
+                banner.regions.remove(x) 
+
+
+        #  определяем выбранные и невыбранные операционные системы из выпадающего списка и пишем их в соответствующий список
+        selected_os = []
+        unselected_os = []
+        for os in form.os_list.choices:
+            if os[0] in form.os_list.data:
+                oper_sys = Os.query.filter_by(id=os[0]).first()
+                selected_os.append(oper_sys)
+            else:
+                oper_sys = Os.query.filter_by(id=os[0]).first()
+                unselected_os.append(oper_sys)
+
+        # добавляем выбранные операционные системы к конкретному баннеру
+        for os in selected_os:
+            banner.operating_systems.append(os)
+
+        # проверяем, назначены ли уже в текущем баннере операционные системы, которые сейчас не выбраны в выпадающем списке с ОС и удаляем их из БД, если таковые имеются.
+        for x in unselected_os:
+            if x in banner.operating_systems:
+                banner.operating_systems.remove(x)
         
         db.session.add(banner)         
         db.session.commit()
