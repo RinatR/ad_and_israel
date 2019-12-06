@@ -1,7 +1,8 @@
 from flask import (render_template, url_for, flash, redirect, request, Blueprint)
 from flask_login import login_user, current_user, login_required
 from ad_and_israel import db
-from ad_and_israel.models import Campaign, Banner
+import secrets
+from ad_and_israel.models import Campaign, Imagebanner, Htmlbanner
 from ad_and_israel.campaigns.forms import CampaignForm
 from ad_and_israel.campaigns.utils import create_folder, delete_campaign_folder
 
@@ -39,10 +40,12 @@ def campaigns():
 @login_required
 def campaign(campaign_id):
     campaign = Campaign.query.get_or_404(campaign_id)
-    banners = Banner.query.filter_by(campaign_id=campaign_id).all()  
-    
+    image_banners = Imagebanner.query.filter_by(campaign_id=campaign_id).all()  
+    html_banners = Htmlbanner.query.filter_by(campaign_id=campaign_id).all()
+    joined_banners = image_banners + html_banners
+
     return render_template('campaign.html', title=campaign.title, 
-        campaign=campaign, banners=banners)
+        campaign=campaign, banners=joined_banners)
 
 @camps.route("/campaign/<int:campaign_id>/update", methods=['GET', 'POST'])
 @login_required

@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% block content %}	
+	<article class="media content-section">         
+  	<div class="media-body">    	
+    	<h2 class="article-title">{{ image_banner.title }}</h2> 
+      <iframe src="{{ url_for('static', filename='campaigns/' + image_banner.parent_campaign.campaign_hash + '/' + image_banner.trafkey + '.html') }}" width="{{image_banner.width}}" height="{{image_banner.height}}" > </iframe>
+      
+  	</div>
+    {% if image_banner.parent_campaign.author == current_user %}
+      <div>
+        <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('image_banners.update_banner', banner_id=image_banner.id)}}">Update</a>
+        <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>        
+      </div>
+    {% endif %}
+	</article>
+
+<p> 
+  <a class="btn btn-link btn-sm" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    Show stats of banner
+  </a>
+</p>
+<div class="collapse" id="collapseExample">
+  <div class="card card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Bids</th>
+          <th scope="col">Impressions</th>
+          <th scope="col">Clicks</th>
+          <th scope="col">Spent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">01.01.2019</th>
+          <td>111</td>
+          <td>222</td>
+          <td>333</td>
+          <td>444</td>
+        </tr>
+        <tr>
+          <th scope="row">02.01.2019</th>
+          <td>555</td>
+          <td>666</td>
+          <td>777</td>
+          <td>888</td>
+        </tr>
+        <tr>
+          <th scope="row">03.01.2019</th>
+          <td>999</td>
+          <td>111</td>
+          <td>222</td>
+          <td>333</td>
+        </tr>
+      </tbody>
+    </table> 
+  </div>
+</div>
+    
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete Banner?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form action="{{ url_for('image_banners.delete_banner', banner_id=image_banner.id) }}" method="POST">
+          <input class="btn btn-danger" type="submit" value="Delete">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+

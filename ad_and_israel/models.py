@@ -40,30 +40,48 @@ class Campaign(db.Model):
 	start_date = db.Column(db.Date, nullable=False)
 	finish_date = db.Column(db.Date, nullable=False)			
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-	banners = db.relationship('Banner', backref='parent_campaign', lazy=True)
+	image_banner = db.relationship('Imagebanner', backref='parent_campaign', lazy=True)
+	html_banner = db.relationship('Htmlbanner', backref='parent_campaign', lazy=True)
 	status = db.Column(db.Boolean(), nullable=False, default=False)
 
 	def __repr__(self):
 		return f"Campaign('{self.title}', '{self.date_posted}', '{self.start_date}', '{self.finish_date}','{self.campaign_hash}')"
 
 
-# соединительная таблица между Banner и SSP
-# используем для сопотавления названия SSP к конкретному баннеру
+# соединительная таблица между Imagebanner и SSP
+# используем для сопотавления названия SSP к конкретному баннеру-картинке
 # потому что у каждого баннера может быть несколько сспшек в качестве источников трафика
-#  поле use_ssp говорит нам о том, используется ли конкретная ссп в этом баннере. 0 не используется, 1 - используется
-ssps = db.Table('ssps',
+ssps_imagebanner = db.Table('ssps_imagebanner',
     db.Column('ssp_id', db.Integer, db.ForeignKey('ssp.id'), primary_key=True),
-    db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
+    db.Column('banner_id', db.Integer, db.ForeignKey('imagebanner.id'), primary_key=True)   
 )
 
-regions = db.Table('regions',
+regions_imagebanner = db.Table('regions_imagebanner',
     db.Column('region_id', db.Integer, db.ForeignKey('region.id'), primary_key=True),
-    db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
+    db.Column('banner_id', db.Integer, db.ForeignKey('imagebanner.id'), primary_key=True)   
 )
 
-operating_systems = db.Table('operating_systems',
+operating_systems_imagebanner = db.Table('operating_systems_imagebanner',
     db.Column('os_id', db.Integer, db.ForeignKey('os.id'), primary_key=True),
-    db.Column('banner_id', db.Integer, db.ForeignKey('banner.id'), primary_key=True)   
+    db.Column('banner_id', db.Integer, db.ForeignKey('imagebanner.id'), primary_key=True)   
+)
+
+# соединительная таблица между Htmlbanner и SSP
+# используем для сопотавления названия SSP к конкретному html-баннеру
+# потому что у каждого баннера может быть несколько сспшек в качестве источников трафика
+ssps_htmlbanner = db.Table('ssps_htmlbanner',
+    db.Column('ssp_id', db.Integer, db.ForeignKey('ssp.id'), primary_key=True),
+    db.Column('banner_id', db.Integer, db.ForeignKey('htmlbanner.id'), primary_key=True)   
+)
+
+regions_htmlbanner = db.Table('regions_htmlbanner',
+    db.Column('region_id', db.Integer, db.ForeignKey('region.id'), primary_key=True),
+    db.Column('banner_id', db.Integer, db.ForeignKey('htmlbanner.id'), primary_key=True)   
+)
+
+operating_systems_htmlbanner = db.Table('operating_systems_htmlbanner',
+    db.Column('os_id', db.Integer, db.ForeignKey('os.id'), primary_key=True),
+    db.Column('banner_id', db.Integer, db.ForeignKey('htmlbanner.id'), primary_key=True)   
 )
 
 # countries = db.Table('geos',
@@ -72,12 +90,12 @@ operating_systems = db.Table('operating_systems',
 # )
 
 
-class Banner(db.Model):
+class Imagebanner(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	title = db.Column(db.String(100), nullable=False)
 	width = db.Column(db.Integer, nullable=False)
 	height = db.Column(db.Integer, nullable=False)	
-	image_file = db.Column(db.Text, nullable=False)	
+	image_file = db.Column(db.Text, nullable=True)	
 	content = db.Column(db.Text, nullable=True)
 	click_link = db.Column(db.Text, nullable=False)
 	audit_link = db.Column(db.Text, nullable=False)	
@@ -85,9 +103,26 @@ class Banner(db.Model):
 	trafkey = db.Column(db.String(20), nullable=False)
 	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
-	ssps = db.relationship('Ssp', secondary=ssps, lazy='subquery', backref=db.backref('banners', lazy=True))
-	regions = db.relationship('Region', secondary=regions, lazy='subquery', backref=db.backref('banners', lazy=True))
-	operating_systems = db.relationship('Os', secondary=operating_systems, lazy='subquery', backref=db.backref('banners', lazy=True))
+	ssps_imagebanner = db.relationship('Ssp', secondary=ssps_imagebanner, lazy='subquery', backref=db.backref('imagebanners', lazy=True))
+	regions_imagebanner = db.relationship('Region', secondary=regions_imagebanner, lazy='subquery', backref=db.backref('imagebanners', lazy=True))
+	operating_systems_imagebanner = db.relationship('Os', secondary=operating_systems_imagebanner, lazy='subquery', backref=db.backref('imagebanners', lazy=True))
+
+
+class Htmlbanner(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	title = db.Column(db.String(100), nullable=False)
+	width = db.Column(db.Integer, nullable=False)
+	height = db.Column(db.Integer, nullable=False)	
+	content = db.Column(db.Text, nullable=False)
+	click_link = db.Column(db.Text, nullable=False)
+	audit_link = db.Column(db.Text, nullable=False)	
+	status = db.Column(db.Boolean(), nullable=False, default=False)
+	trafkey = db.Column(db.String(20), nullable=False)
+	date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+	campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.id'), nullable=False)
+	ssps_htmlbanner = db.relationship('Ssp', secondary=ssps_htmlbanner, lazy='subquery', backref=db.backref('htmlbanners', lazy=True))
+	regions_htmlbanner = db.relationship('Region', secondary=regions_htmlbanner, lazy='subquery', backref=db.backref('htmlbanners', lazy=True))
+	operating_systems_htmlbanner = db.relationship('Os', secondary=operating_systems_htmlbanner, lazy='subquery', backref=db.backref('htmlbanners', lazy=True))
 
 class Ssp(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -118,8 +153,6 @@ class Os(db.Model):
 # class Browser(db.Model):
 # 	id = db.Column(db.Integer, primary_key=True)
 # 	name = db.Column(db.String(100), nullable=False)
-
-
 
 # class Domain(db.Model):
 # 	id = db.Column(db.Integer, primary_key=True)

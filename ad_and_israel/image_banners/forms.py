@@ -11,12 +11,11 @@ class MultiCheckboxField(SelectMultipleField):
 	option_widget = widgets.CheckboxInput()
 
 
-class BannerForm(FlaskForm):
+class ImagebannerForm(FlaskForm):
 	title = StringField('Title', validators=[DataRequired()])
 	width = StringField('Width', validators=[DataRequired()])
 	height = StringField('Height', validators=[DataRequired()])
-	image = FileField('Banner Image', validators=[FileAllowed(['jpg', 'png', 'gif'])])
-	content = TextAreaField('HTML Code')
+	image = FileField('Banner Image', validators=[FileAllowed(['jpg', 'png', 'gif'])])	
 	click_link = StringField('Click link', validators=[DataRequired()])
 	audit_link = StringField('Audit link')	
 	submit = SubmitField('Save')
@@ -46,7 +45,7 @@ class BannerForm(FlaskForm):
 		region_list.append(region_dict)
 			
 	region_items = [(str(value['id']), value['name']) for value in region_list]	
-	region_list = SelectMultipleField(u'Available regions', choices=region_items,validators=[DataRequired()])
+	region_list = SelectMultipleField(u'Available regions', choices=region_items)
 
 	operating_systems = Os.query.all()			
 	os_list = []
@@ -57,4 +56,4 @@ class BannerForm(FlaskForm):
 		os_list.append(os_dict)
 			
 	os_items = [(str(value['id']), value['name']) for value in os_list]	
-	os_list = SelectMultipleField(u'Available operating systems', choices=os_items,validators=[DataRequired()])
+	os_list = SelectMultipleField(u'Available operating systems', choices=os_items)

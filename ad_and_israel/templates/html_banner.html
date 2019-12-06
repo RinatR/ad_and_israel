@@ -2,13 +2,13 @@
 {% block content %}	
 	<article class="media content-section">         
   	<div class="media-body">    	
-    	<h2 class="article-title">{{ banner.title }}</h2> 
-      <iframe src="{{ url_for('static', filename='campaigns/' + banner.parent_campaign.campaign_hash + '/' + banner.trafkey + '.html') }}" width="{{banner.width}}" height="{{banner.height}}" > </iframe>
+    	<h2 class="article-title">{{ html_banner.title }}</h2> 
+      <iframe src="{{ url_for('static', filename='campaigns/' + html_banner.parent_campaign.campaign_hash + '/' + html_banner.trafkey + '.html') }}" width="{{html_banner.width}}" height="{{html_banner.height}}" > </iframe>
       
   	</div>
-    {% if banner.parent_campaign.author == current_user %}
+    {% if html_banner.parent_campaign.author == current_user %}
       <div>
-        <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('banners.update_banner', banner_id=banner.id)}}">Update</a>
+        <a class="btn btn-secondary btn-sm m-1" href="{{ url_for('html_banners.update_banner', banner_id=html_banner.id)}}">Update</a>
         <button class="btn btn-danger btn-sm m-1" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>        
       </div>
     {% endif %}
@@ -70,7 +70,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <form action="{{ url_for('banners.delete_banner', banner_id=banner.id) }}" method="POST">
+        <form action="{{ url_for('html_banners.delete_banner', banner_id=html_banner.id) }}" method="POST">
           <input class="btn btn-danger" type="submit" value="Delete">
         </form>
       </div>

@@ -17,14 +17,16 @@ login_manager.login_message_category = 'info'
 from ad_and_israel.users.routes import users
 from ad_and_israel.posts.routes import posts
 from ad_and_israel.campaigns.routes import camps
-from ad_and_israel.banners.routes import banners
+from ad_and_israel.image_banners.routes import image_banner
+from ad_and_israel.html_banners.routes import html_banner
 from ad_and_israel.main.routes import main
 from ad_and_israel.ssps.routes import sources
 
 app.register_blueprint(users)
 app.register_blueprint(posts)
 app.register_blueprint(camps)
-app.register_blueprint(banners)
+app.register_blueprint(image_banner)
+app.register_blueprint(html_banner)
 app.register_blueprint(main)
 app.register_blueprint(sources)
 

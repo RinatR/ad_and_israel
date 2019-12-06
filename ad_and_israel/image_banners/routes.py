@@ -2,13 +2,13 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, login_required
 from ad_and_israel import db
 import secrets
-from ad_and_israel.models import Banner, Ssp, Campaign, Region, Os
-from ad_and_israel.banners.forms import BannerForm
-from ad_and_israel.banners.utils import save_banner_picture, write_html_to_file, generate_html
+from ad_and_israel.models import Imagebanner, Ssp, Campaign, Region, Os
+from ad_and_israel.image_banners.forms import ImagebannerForm
+from ad_and_israel.image_banners.utils import save_banner_picture, write_html_to_file, generate_html
 
-banners = Blueprint('banners', __name__)
+image_banner = Blueprint('image_banners', __name__)
 
-@banners.route("/banner/new", methods=['GET', 'POST'])
+@image_banner.route("/image_banner/new", methods=['GET', 'POST'])
 @login_required
 def new_banner():
     '''
@@ -17,10 +17,11 @@ def new_banner():
     2. сохраняем картинку баннера в файловой системе внутри папки с кампанией
     3. генерируем html-файл с баннером и сохраняем его  в БД
     '''
-    campaign_id = request.args.get('campaign_id',type=int)  
-    
-    form = BannerForm()
-    if form.validate_on_submit(): 
+    campaign_id = request.args.get('campaign_id',type=int)    
+
+    form = ImagebannerForm()    
+    if form.validate_on_submit():
+     
         chosen_ssp_ids = [] 
         for cx in form.ssp_checkboxes:
             ssp = Ssp.query.filter_by(name=cx.data).first()            
@@ -33,29 +34,31 @@ def new_banner():
             trafkey = secrets.token_hex(8) # здесь генерируем трафкей
             banner_html = generate_html(banner_image, trafkey, campaign.campaign_hash)    
             write_html_to_file(banner_html,campaign.campaign_hash, trafkey)     
-            banner = Banner(title=form.title.data, image_file=banner_image, width=form.width.data, 
+            banner = Imagebanner(title=form.title.data, image_file=banner_image, width=form.width.data, 
                             height=form.height.data, click_link=form.click_link.data, audit_link=form.audit_link.data,
                             campaign_id=campaign_id, content=banner_html, trafkey=trafkey)
 
             #  добавляем выбранные ссп к баннеру
             for x in chosen_ssp_ids:
-                banner.ssps.append(x)
+                banner.ssps_imagebanner.append(x)
 
             #  добавляем выбранные регионы к баннеру
             for region in form.region_list.data:
                 reg = Region.query.filter_by(id=region).first()            
-                banner.regions.append(reg)
+                banner.regions_imagebanner.append(reg)
 
              #  добавляем выбранные операционные системы к баннеру
             for os in form.os_list.data:
                 oper_sys = Os.query.filter_by(id=os).first()            
-                banner.operating_systems.append(oper_sys)
+                banner.operating_systems_imagebanner.append(oper_sys)
             
             db.session.add(banner)
             db.session.commit()                 
             flash('Your banner has been created', 'success')
-            return redirect(url_for('campaigns.campaign',campaign_id=campaign_id))
-    return render_template('create_banner.html', form=form, legend='New Banner', title='New Banner')
+            return redirect(url_for('campaigns.campaign',campaign_id=campaign_id))    
+
+    return render_template('create_image_banner.html', form=form, legend='New Banner', 
+                            title='New Banner')
 
 
 
@@ -65,23 +68,21 @@ def new_banner():
 
 # https://log.rinads.com/?src=bw&s_act=n&s_trk=CghWgOBZk3yCtxDazeWmCxjFq7XMBQ**
 
-@banners.route("/banner/<int:banner_id>", methods=['GET', 'POST'])
+@image_banner.route("/image_banner/<int:banner_id>", methods=['GET', 'POST'])
 @login_required
 def banner(banner_id):
-    banner = Banner.query.get_or_404(banner_id)
-    # for b in banner.ssps:
-    #     print(b.name)
-    print(banner.operating_systems)
-    return render_template('banner.html', title=banner.title, banner=banner)
+    banner = Imagebanner.query.get_or_404(banner_id)   
+    print(banner.ssps_imagebanner)
+    return render_template('image_banner.html', title=banner.title, image_banner=banner)
 
-@banners.route("/banner/<int:banner_id>/update", methods=['GET', 'POST'])
+@image_banner.route("/image_banner/<int:banner_id>/update", methods=['GET', 'POST'])
 @login_required
 def update_banner(banner_id):
-    banner = Banner.query.get_or_404(banner_id) 
+    banner = Imagebanner.query.get_or_404(banner_id) 
 
     if banner.parent_campaign.author != current_user:
         abort(403)
-    form = BannerForm()    
+    form = ImagebannerForm()    
     if form.validate_on_submit():        
 
         if form.image.data:           
@@ -107,12 +108,12 @@ def update_banner(banner_id):
         
         # добавляем выбранные ссп к конкретному баннеру
         for x in selected_ssp_ids:
-            banner.ssps.append(x)  
+            banner.ssps_imagebanner.append(x)  
 
         # проверяем, назначены ли уже в текущем баннере ссп, которые сейчас не выбраны в чекбоксах и удаляем их из БД, если таковые имеются.
         for x in unselected_ssp_ids:
-            if x in banner.ssps:
-                banner.ssps.remove(x)
+            if x in banner.ssps_imagebanner:
+                banner.ssps_imagebanner.remove(x)
 
         #  определяем выбранные и невыбранные регионы из выпадающего списка и пишем их в соответствующий список
         selected_regions = []
@@ -127,12 +128,12 @@ def update_banner(banner_id):
 
         # добавляем выбранные регионы к конкретному баннеру
         for region in selected_regions:
-            banner.regions.append(region)
+            banner.regions_imagebanner.append(region)
 
         # проверяем, назначены ли уже в текущем баннере регионы, которые сейчас не выбраны в выпадающем списке с регионами и удаляем их из БД, если таковые имеются.
         for x in unselected_regions:
-            if x in banner.regions:
-                banner.regions.remove(x) 
+            if x in banner.regions_imagebanner:
+                banner.regions_imagebanner.remove(x) 
 
 
         #  определяем выбранные и невыбранные операционные системы из выпадающего списка и пишем их в соответствующий список
@@ -148,12 +149,12 @@ def update_banner(banner_id):
 
         # добавляем выбранные операционные системы к конкретному баннеру
         for os in selected_os:
-            banner.operating_systems.append(os)
+            banner.operating_systems_imagebanner.append(os)
 
         # проверяем, назначены ли уже в текущем баннере операционные системы, которые сейчас не выбраны в выпадающем списке с ОС и удаляем их из БД, если таковые имеются.
         for x in unselected_os:
-            if x in banner.operating_systems:
-                banner.operating_systems.remove(x)
+            if x in banner.operating_systems_imagebanner:
+                banner.operating_systems_imagebanner.remove(x)
         
         db.session.add(banner)         
         db.session.commit()
@@ -168,13 +169,13 @@ def update_banner(banner_id):
         form.click_link.data = banner.click_link
         form.audit_link.data = banner.audit_link        
                 
-    return render_template('create_banner.html', title='Update Banner',
+    return render_template('create_image_banner.html', title='Update Banner',
                             form=form, legend='Update Banner')
 
-@banners.route("/banner/<int:banner_id>/delete", methods=['POST'])
+@image_banner.route("/image_banner/<int:banner_id>/delete", methods=['POST'])
 @login_required
 def delete_banner(banner_id):
-    banner = Banner.query.get_or_404(banner_id)
+    banner = Imagebanner.query.get_or_404(banner_id)
     if banner.parent_campaign.author != current_user:
         abort(403)
     db.session.delete(banner)

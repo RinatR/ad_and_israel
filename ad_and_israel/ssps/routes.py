@@ -18,7 +18,7 @@ def new_ssp():
         db.session.commit()
         flash('The new SSP has been created', 'success')
 
-        return redirect(url_for('ssps.ssps'))
+        return redirect(url_for('sources.ssps'))
     return render_template('create_ssp.html', form=form, legend='New SSP')
 
 @sources.route("/ssps")
@@ -44,7 +44,7 @@ def update_ssp(ssp_id):
         ssp.endpoint_url = form.endpoint_url.data
         db.session.commit()
         flash('The SSP has been updated', 'success')
-        return redirect(url_for('ssps.ssps'))
+        return redirect(url_for('sources.ssps'))
     elif request.method == 'GET':
         form.name.data = ssp.name
         form.type.data = ssp.type
@@ -59,4 +59,4 @@ def delete_ssp(ssp_id):
     db.session.delete(ssp)
     db.session.commit()
     flash('The SSP has been deleted', 'success')
-    return redirect(url_for('ssps.ssps'))
+    return redirect(url_for('sources.ssps'))
